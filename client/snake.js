@@ -2,6 +2,7 @@
     var BLOCK_WIDTH = 25;
     var BLOCK_HEIGHT = 25;
     var DIR = { RIGHT: 39, DOWN: 40, LEFT: 37, UP: 38};
+    var SPACEBAR = 32;
 
     this.blockCoords = [];
     this.running = undefined;
@@ -19,10 +20,17 @@
 	    TOP: 0
 	};
 
-	this.running = false;
+	this.running = true;
 	this.direction = DIR.RIGHT;
 	this.blockCoords = [{w: 4, l: 4}, {w: 4, l: 5}];
 	this.placeFood();
+    };
+
+    this.togglePause = function () {
+	this.running = !this.running;
+	if (this.running) {
+	    this.eventLoop();
+	}
     };
 
     this.isBlockInSnake = function (selBlock) {
@@ -57,7 +65,13 @@
 	    case DIR.DOWN: 
 	    case DIR.LEFT: 
 	    case DIR.UP: {
-		this.direction = key;
+		if (this.running) {
+		    this.direction = key;
+		}
+		break;
+	    }
+	    case SPACEBAR: {
+		this.togglePause();
 		break;
 	    }
 	    }
@@ -66,7 +80,7 @@
 
     this.drawSnake = function () {
 	this.blockCoords.forEach(function (block) {
-	    this.canvasCtx.fillStyle = "#fe57a1";
+            this.canvasCtx.fillStyle = (this.running) ? "#fe57a1" : "#a1fe57";
             this.canvasCtx.fillRect(block.w * BLOCK_WIDTH,
 				    block.l * BLOCK_HEIGHT,
 				    BLOCK_WIDTH,
@@ -84,11 +98,15 @@
 
     var tickDuration = 250; // 0.25sec
     this.eventLoop = function () {
-	this.advance();
+	if (this.running) {
+	    this.advance();
+	}
 	this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.drawSnake();
 	this.drawFood();
-	setTimeout(this.eventLoop.bind(this), tickDuration);
+	if (this.running) {
+	    setTimeout(this.eventLoop.bind(this), tickDuration);
+	}
     }.bind(this);
 
     this.advance = function () {
@@ -129,14 +147,9 @@
 	}
     }.bind(this);
 
-    this.unpause = function () {
-	this.running = true;
-	this.eventLoop();
-    }.bind(this);
-
     $(document).ready(function () {
         this.init();
 	this.bindEvents();
-	this.unpause();
+	this.eventLoop();
     }.bind(this));
 })();
