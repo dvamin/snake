@@ -25,7 +25,6 @@
             LEFT: 0,
             TOP: 0
         };
-        this.start();
     }
 
     this.start = function () {
@@ -73,6 +72,33 @@
     };
 
     this.bindEvents = function () {
+        this.canvas.onmouseup = function (e) {
+            var rect = this.canvas.getBoundingClientRect();
+            var x = Math.floor((e.clientX - rect.left) / BLOCK_WIDTH);
+            var y = Math.floor((e.clientY - rect.top) / BLOCK_HEIGHT);
+            var head = this.blockCoords[this.blockCoords.length - 1];
+            switch (this.direction) {
+            case DIR.LEFT:
+            case DIR.RIGHT: {
+                if (y < head.l) {
+                    this.direction = DIR.UP;
+                }
+                else if (y > head.l) {
+                    this.direction = DIR.DOWN;
+                }
+            } break;
+            case DIR.UP:
+            case DIR.DOWN: {
+                if (x < head.w) {
+                    this.direction = DIR.LEFT;
+                }
+                else if (x > head.w) {
+                    this.direction = DIR.RIGHT;
+                }
+            } break;
+            };
+            e.preventDefault();
+        }.bind(this);
         $(document).keydown(function (event) {
             var key = event.which;
             switch (key) {
@@ -184,7 +210,8 @@
     }.bind(this);
 
     $(document).ready(function () {
-        this.bindEvents();
         this.init();
+        this.bindEvents();
+        this.start();
     }.bind(this));
 })();
